@@ -1,7 +1,7 @@
 ---
 title: "Data transformation with dplyr"
 subtitle: "And make a plot"
-author: ""
+author: "Shray Saxena"
 format:
   html:
     embed-resources: true
@@ -43,11 +43,15 @@ sanitation <- read_csv("data/jmp_wld_sanitation_long.csv")
 ## Task 1
 
 1.  Run all code chunks above.
+
 2.  Use the `glimpse()` function to get an overview of the data set.
+
 3.  How many variables are in the data set?
 
-```{r}
+    There are 8 variables in the data set.
 
+```{r}
+glimpse(sanitation)
 ```
 
 ## Task 2
@@ -55,7 +59,8 @@ sanitation <- read_csv("data/jmp_wld_sanitation_long.csv")
 1.  Use the `count()` function with varname_short and varname_long to identify the definitions of the levels in these two variables.
 
 ```{r}
-
+sanitation |> 
+  count(varname_short, varname_long)
 ```
 
 ## Task 3
@@ -69,7 +74,10 @@ sanitation <- read_csv("data/jmp_wld_sanitation_long.csv")
 2.  Store the result as a new object in your environment with a name of your choice.
 
 ```{r}
-
+sanitation_india_notsafelymanaged <- sanitation |> 
+  filter(year %in% c(2000:2020), 
+         iso3 == "IND", 
+         varname_short != "san_sm") 
 ```
 
 ## Task 4
@@ -77,6 +85,9 @@ sanitation <- read_csv("data/jmp_wld_sanitation_long.csv")
 1.  Use the `count()` function with the data you created in Task 3 to verify that year 2000 and 2020 remained in the year variable.
 
 ```{r}
+sanitation_india_notsafelymanaged |> 
+  filter(year == 2000 | year == 2020) |> 
+  count(year)
 
 ```
 
@@ -100,6 +111,18 @@ geom_text(aes(label = round(percent, 1)),
 ```
 
 ```{r}
+ggplot(data = sanitation_india_notsafelymanaged, 
+       mapping = aes(x= residence, 
+                     y = percent,
+                     fill = varname_long))+
+  geom_col()+
+  facet_wrap(~year)+
+  scale_fill_colorblind()+
+  geom_text(aes(label = round(percent, 1)), 
+          position = position_stack(vjust = 0.5),
+          size = 3,
+          color = "white") 
+  
 
 ```
 
@@ -108,13 +131,28 @@ geom_text(aes(label = round(percent, 1)),
 If you haven't worked with JMP indicators before, the following questions will be challenging to answer.
 
 1.  Look at the plot that you created. What do you notice about the order of the bars / order of the legend?
+
+    The bars/legend is always ordered from basic sanitation services to limited to no sanitation facilities to unimproved sanitation facilities as the best- to worst-case scenario.
+
 2.  What would you want to change?
+
+    I would change the order to: basic then limited then unimproved and finally no sanitation facilities going from best- to worst-case.
+
 3.  Why did we remove "safely managed sanitation services" from the data set in Task 3?
+
+    The reason to remove safely managed sanitation services from the data set is not clear to me, since you would want to track the country's progress year-on-year as total sanitation. Plotting along with the safely managed sanitation option would make year-on-year comparison easy as it enables us to keep the 100% mark on the y-axis constant for each year.
+
+    In the case without safely managed sanitation, the labels demonstrate an increase in basic sanitation and reduction in limited and unimproved services for each national, rural and urban residence, but it doesn't show the true change in reaching the goal of safely managed sanitation for all. Nonetheless, the chart does provide a powerful image of progress.
 
 ## Task 7
 
 1.  Run the code in the code chunk below.
+
 2.  What do you observe when you look at the code and plot?
+
+    The histogram plot shows data from the year 2020 for all countries. The scaling is off on the y-axis (because of scales = "free_y"), making it hard to compare between sanitation types. The code asks for no legend to be shown (legend.position ="none").
+
+    The plot reveals that in the year 2020 (10 years away from the target data), we are still far from the goal of of 100% safely managed sanitation for all and an open defecation free society. A good amount of data (50-100 counts) shows 0% San_OD, 0% San_lim, 0% san_unim, and 100% san_bas, which makes me think that countries are making fast progress towards basic sanitation services but a slow progress in converting basic sanitation to safely managed sanitation (\<10 counts at 100%).
 
 ```{r}
 
